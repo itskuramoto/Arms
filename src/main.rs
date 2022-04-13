@@ -14,4 +14,10 @@ mod test {
         let contents = read_file_contents("text.txt".to_string());
         assert_eq!(contents, "from text.txt");
     }
+
+    #[test]
+    #[should_panic]
+    fn non_exists_filename() {
+        read_file_contents("fail_text.txt".to_string());
+    }
 }
