@@ -10,7 +10,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_read_file_contents() {
+    fn exists_filename() {
         let contents = read_file_contents("text.txt".to_string());
         assert_eq!(contents, "from text.txt");
     }
