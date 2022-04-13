@@ -1,3 +1,8 @@
+use std::env;
+
 fn main() {
-    println!("Hello, world!");
+    for argument in env::args().skip(1) {
+        print!("{} ", argument);
+    }
+    println!();
 }
