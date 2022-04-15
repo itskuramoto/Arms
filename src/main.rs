@@ -1,16 +1,23 @@
 use std::fs::File;
-use std::io::Read;
+use std::io::{BufRead, BufReader};
 use clap::Parser;
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse(); 
-    let mut f = File::open(args.file).expect("file not found");
-
-    let mut contents = String::new();
-    f.read_to_string(&mut contents)
-        .expect("something went wrong reading the file");
-
-    println!("{}", contents);
+    let mut cnt: u32 = 0;
+    for result in BufReader::new(File::open(args.file)?).lines() {
+        cnt += 1;
+        let l = result?;
+        if args.number
+        {
+            println!("{:>6}\t{}", cnt, l);
+        }
+        else
+        {
+            println!("{}", l);
+        }
+    }
+    Ok(())
 }
 
 #[derive(Debug, Parser)]
@@ -19,5 +26,10 @@ fn main() {
 struct Args {
     /// file path
     file: String,
+
+    /// Line numbering on all lines
+    #[clap(short, long)]
+    number: bool,
+
 }
 
