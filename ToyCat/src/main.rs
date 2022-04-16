@@ -1,23 +1,27 @@
+use clap::Parser;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use clap::Parser;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = Args::parse(); 
-    let mut cnt: u32 = 0;
-    for result in BufReader::new(File::open(args.file)?).lines() {
-        cnt += 1;
-        let l = result?;
-        if args.number
-        {
-            println!("{:>6}\t{}", cnt, l);
-        }
-        else
-        {
-            println!("{}", l);
+fn cat() -> Result<(), Box<dyn std::error::Error>> {
+    let args = Args::parse();
+    let file = File::open(args.file)?;
+    for (count, result) in BufReader::new(file).lines().enumerate() {
+        if args.number {
+            println!("{:>6}\t{}", count + 1, result?);
+        } else {
+            println!("{}", result?)
         }
     }
     Ok(())
+}
+
+fn main() {
+    match cat() {
+        Ok(()) => {}
+        Err(e) => {
+            println!("{}", e)
+        }
+    }
 }
 
 #[derive(Debug, Parser)]
