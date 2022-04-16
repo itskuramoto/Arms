@@ -3,7 +3,7 @@ use std::io::{BufRead, BufReader};
 use clap::Parser;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = Args::parse(); 
+    let args = Args::parse();
     let mut cnt: u32 = 0;
     for result in BufReader::new(File::open(args.file)?).lines() {
         cnt += 1;
