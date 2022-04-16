@@ -1,13 +1,24 @@
 use std::fs;
 use clap::Parser;
+use std::io::Error;
 
-fn main() -> std::io::Result<()> {
+fn main() {
     let args = Args::parse();
-    let metadata = fs::metadata(&args.file)?;
+    match file_delete(&args.file) {
+        Ok(()) => {
+        }
+        Err(e) => {
+            println!("Error:{}", e);
+        }
+    }
+}
+
+fn file_delete(_file: &String) -> Result<(), Error> {
+    let metadata = fs::metadata(_file)?;
     if metadata.is_file() {
-        fs::remove_file(&args.file)?;
+        fs::remove_file(_file).expect("File could not be deleted.");
     } else {
-        fs::remove_dir(&args.file)?;
+        fs::remove_dir(_file).expect("Directory could not be deleted.");
     }
     Ok(())
 }
