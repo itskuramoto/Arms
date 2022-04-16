@@ -1,9 +1,15 @@
 use std::fs;
-use std::env;
+use clap::Parser;
 
 fn main() -> std::io::Result<()> {
-    let args: Vec<String> = env::args().collect();
-    let filename = &args[1];
+    let args = Args::parse();
+    let filename = &args.file;
     fs::remove_file(filename)?;
     Ok(())
+}
+
+#[derive(Debug, Parser)]
+struct Args {
+    /// file path
+    file: String,
 }
