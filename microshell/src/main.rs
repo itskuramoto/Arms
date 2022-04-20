@@ -8,7 +8,7 @@ fn main() {
     ignore_signals();
     while let Some(line) = read_line() {
         if !&line.is_empty() {
-            exec_cmd(&line);
+            exec_cmd(cmd_parse(&line));
         }
     }
 }
@@ -34,7 +34,7 @@ fn read_line() -> Option<String> {
     }
 }
 
-fn exec_cmd(_line: &str) {
+fn exec_cmd(cmd: Vec<CString>) {
     match unsafe { fork() } {
         Ok(ForkResult::Parent { child, .. }) => {
             waitpid(child, None).unwrap();
@@ -42,14 +42,6 @@ fn exec_cmd(_line: &str) {
         Ok(ForkResult::Child) => {
             restore_signals();
 
-            let lines = _line.split(' ')
-                .map(|s| s.to_string())
-                .collect::<Vec<_>>();
-            let mut cmd = Vec::new();
-
-            for argument in lines {
-                cmd.push(CString::new(argument.to_string()).unwrap());
-            }
             execvp(&cmd[0], &cmd).unwrap();
         }
         Err(e) => {
@@ -57,6 +49,19 @@ fn exec_cmd(_line: &str) {
         }
     }
 }
+
+fn cmd_parse(_line: &str) -> Vec<CString> {
+    let lines = _line.split(' ')
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+    let mut cmd = Vec::new();
+
+    for argument in lines {
+        cmd.push(CString::new(argument.to_string()).unwrap());
+    }
+    cmd
+}
+
 
 fn ignore_signals() {
     let sa = SigAction::new(SigHandler::SigIgn, SaFlags::empty(), SigSet::empty());
