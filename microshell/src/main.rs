@@ -20,11 +20,10 @@ fn display_prompt() {
     match home::home_dir() {
         Some(home) => {
             let current_path = env::current_dir().unwrap();
-            let ps = current_path.as_path();
-            match Path::new(ps).strip_prefix(home) {
+            let current_pathbuf = current_path.as_path();
+            match Path::new(current_pathbuf).strip_prefix(home) {
                 Ok(result) => {
-                    let _buf = Path::new(result).to_path_buf();
-                    print!("[~/{}]{}", _buf.display(), "$ ".red());
+                    print!("[~/{}]{}", result.display(), "$ ".red());
                     stdout().flush().unwrap();
                 }
                 Err(e) => {
