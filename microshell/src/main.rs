@@ -3,6 +3,9 @@ use nix::sys::signal::*;
 use nix::unistd::{execvp, fork, ForkResult};
 use std::ffi::CString;
 use std::io::{stdin, stdout, Write};
+use std::env;
+use colored::*;
+use std::path::Path;
 
 fn main() {
     ignore_signals();
@@ -13,9 +16,28 @@ fn main() {
     }
 }
 
+fn display_prompt() {
+    match home::home_dir() {
+        Some(home) => {
+            let current_path = env::current_dir().unwrap();
+            let ps = current_path.as_path();
+            match Path::new(ps).strip_prefix(home) {
+                Ok(result) => {
+                    let _buf = Path::new(result).to_path_buf();
+                    print!("[~/{}]{}", _buf.display(), "$ ".red());
+                    stdout().flush().unwrap();
+                }
+                Err(e) => {
+                    eprintln!("{}", e);
+                }
+            }
+        }
+        None => eprintln!("Impossible to get your home dir!"),
+    }
+}
+
 fn read_line() -> Option<String> {
-    print!("$ ");
-    stdout().flush().unwrap();
+    display_prompt();
 
     let mut result = String::new();
     match stdin().read_line(&mut result) {
