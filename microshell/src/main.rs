@@ -1,9 +1,13 @@
-use nix::sys::wait::*;
-use nix::sys::signal::*;
+use nix::sys::{
+    wait::*,
+    signal::*,
+};
+use std::{
+    ffi::CString,
+    io::{stdin, stdout, Write},
+    env,
+};
 use nix::unistd::{execvp, fork, ForkResult};
-use std::ffi::CString;
-use std::io::{stdin, stdout, Write};
-use std::env;
 use colored::*;
 use whoami;
 
@@ -18,7 +22,7 @@ fn main() {
 
 fn display_prompt() {
     let current_path = env::current_dir().unwrap();
-        
+
     match current_path.to_str() {
         None => { eprintln!("Path cannot be converted to string type"); },
         Some(strdir) => {
