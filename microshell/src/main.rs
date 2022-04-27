@@ -5,7 +5,7 @@ use std::ffi::CString;
 use std::io::{stdin, stdout, Write};
 use std::env;
 use colored::*;
-use std::path::Path;
+use whoami;
 
 fn main() {
     ignore_signals();
@@ -17,23 +17,22 @@ fn main() {
 }
 
 fn display_prompt() {
-    match home::home_dir() {
-        Some(home) => {
-            let current_path = env::current_dir().unwrap();
-            let current_pathbuf = current_path.as_path();
-            match Path::new(current_pathbuf).strip_prefix(home) {
-                Ok(result) => {
-                    print!("[~/{}]{}", result.display(), "$ ".red());
-                    stdout().flush().unwrap();
-                }
-                Err(e) => {
-                    eprintln!("{}", e);
-                }
-            }
-        }
-        None => eprintln!("Impossible to get your home dir!"),
+    let current_path = env::current_dir().unwrap();
+        
+    match current_path.to_str() {
+        None => { eprintln!("Path cannot be converted to string type"); },
+        Some(strdir) => {
+            let dir: Vec<&str> = strdir.split('/').collect();
+            print!("[{}@{} {}]{}",
+                whoami::username().yellow(),
+                whoami::hostname(),
+                dir[dir.len()-1],
+                "$ ".red());
+            stdout().flush().unwrap();
+        },
     }
 }
+
 
 fn read_line() -> Option<String> {
     display_prompt();
