@@ -1,6 +1,7 @@
+mod process;
+
 use nix::sys::{
     wait::*,
-    signal::*,
 };
 use std::{
     ffi::CString,
@@ -12,9 +13,10 @@ use std::{
 use nix::unistd::{execvp, fork, ForkResult};
 use colored::*;
 use whoami;
+use process::signal;
 
 fn main() {
-    ignore_signals();
+    signal::ignore_signals();
     while let Some(line) = read_line() {
         if !&line.is_empty() {
             match cmd_parse(&line) {
@@ -69,7 +71,7 @@ fn exec_cmd(cmd: Vec<CString>) {
             waitpid(child, None).unwrap();
         }
         Ok(ForkResult::Child) => {
-            restore_signals();
+            signal::restore_signals();
 
             execvp(&cmd[0], &cmd).unwrap();
         }
@@ -103,21 +105,5 @@ fn run_cd(_dir: String) {
     match env::set_current_dir(path) {
         Ok(()) => {}
         Err(e) => { eprintln!("{}", e) }
-    }
-}
-
-fn ignore_signals() {
-    let sa = SigAction::new(SigHandler::SigIgn, SaFlags::empty(), SigSet::empty());
-    unsafe {
-        sigaction(Signal::SIGINT, &sa).unwrap();
-        sigaction(Signal::SIGQUIT, &sa).unwrap();
-    }
-}
-
-fn restore_signals() {
-    let sa = SigAction::new(SigHandler::SigDfl, SaFlags::empty(), SigSet::empty());
-    unsafe {
-        sigaction(Signal::SIGINT, &sa).unwrap();
-        sigaction(Signal::SIGQUIT, &sa).unwrap();
     }
 }
