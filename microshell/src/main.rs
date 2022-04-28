@@ -6,6 +6,8 @@ use std::{
     ffi::CString,
     io::{stdin, stdout, Write},
     env,
+    process::exit,
+    path::Path,
 };
 use nix::unistd::{execvp, fork, ForkResult};
 use colored::*;
@@ -15,7 +17,10 @@ fn main() {
     ignore_signals();
     while let Some(line) = read_line() {
         if !&line.is_empty() {
-            exec_cmd(cmd_parse(&line));
+            match cmd_parse(&line) {
+                Some(result) => { exec_cmd(result) }
+                None => {}
+            }
         }
     }
 }
@@ -74,18 +79,32 @@ fn exec_cmd(cmd: Vec<CString>) {
     }
 }
 
-fn cmd_parse(_line: &str) -> Vec<CString> {
+fn cmd_parse(_line: &str) -> Option<Vec<CString>> {
     let lines = _line.split(' ')
         .map(|s| s.to_string())
         .collect::<Vec<_>>();
     let mut cmd = Vec::new();
 
-    for argument in lines {
+    for (i, argument) in lines.iter().enumerate() {
+        if argument == "exit" {
+            exit(0);
+        }
+        else if argument == "cd" {
+            run_cd(lines[i + 1].clone());
+            return None;
+        }
         cmd.push(CString::new(argument.to_string()).unwrap());
     }
-    cmd
+    Some(cmd)
 }
 
+fn run_cd(_dir: String) {
+    let path = Path::new(&_dir);
+    match env::set_current_dir(path) {
+        Ok(()) => {}
+        Err(e) => { eprintln!("{}", e) }
+    }
+}
 
 fn ignore_signals() {
     let sa = SigAction::new(SigHandler::SigIgn, SaFlags::empty(), SigSet::empty());
