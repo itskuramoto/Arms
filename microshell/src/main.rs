@@ -6,6 +6,7 @@ use std::{
     ffi::CString,
     io::{stdin, stdout, Write},
     env,
+    process::exit,
 };
 use nix::unistd::{execvp, fork, ForkResult};
 use colored::*;
@@ -81,6 +82,9 @@ fn cmd_parse(_line: &str) -> Vec<CString> {
     let mut cmd = Vec::new();
 
     for argument in lines {
+        if argument == "exit" {
+            exit(0);
+        }
         cmd.push(CString::new(argument.to_string()).unwrap());
     }
     cmd
