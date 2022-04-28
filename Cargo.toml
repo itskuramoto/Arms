@@ -7,3 +7,19 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "3.1.8", features = ["derive"] }
+
+[[bin]]
+name = "cat"
+path = "src/cat.rs"
+
+[[bin]]
+name = "cp"
+path = "src/cp.rs"
+
+[[bin]]
+name = "echo"
+path = "src/echo.rs"
+
+[[bin]]
+name = "rm"
+path = "src/rm.rs"
