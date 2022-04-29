@@ -1,19 +1,17 @@
 mod process;
 
-use nix::sys::{
-    wait::*,
-};
+use nix::sys::wait::*;
 use std::{
     ffi::CString,
     io::{stdin, stdout, Write},
     env,
     process::exit,
-    path::Path,
 };
 use nix::unistd::{execvp, fork, ForkResult};
 use colored::*;
 use whoami;
 use process::signal;
+use process::builtin_cmd;
 
 fn main() {
     signal::ignore_signals();
@@ -25,6 +23,7 @@ fn main() {
             }
         }
     }
+    println!();
 }
 
 fn display_prompt() {
@@ -92,18 +91,10 @@ fn cmd_parse(_line: &str) -> Option<Vec<CString>> {
             exit(0);
         }
         else if argument == "cd" {
-            run_cd(lines[i + 1].clone());
+            builtin_cmd::run_cd(lines[i + 1].clone());
             return None;
         }
         cmd.push(CString::new(argument.to_string()).unwrap());
     }
     Some(cmd)
-}
-
-fn run_cd(_dir: String) {
-    let path = Path::new(&_dir);
-    match env::set_current_dir(path) {
-        Ok(()) => {}
-        Err(e) => { eprintln!("{}", e) }
-    }
 }
