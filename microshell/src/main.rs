@@ -1,21 +1,16 @@
 mod process;
 
 use nix::sys::wait::*;
-use std::{
-    ffi::CString,
-    io::{stdin, stdout, Write},
-    env,
-    process::exit,
-};
+use std::{ffi::CString, process::exit};
 use nix::unistd::{execvp, fork, ForkResult};
-use colored::*;
-use whoami;
+
 use process::signal;
 use process::builtin_cmd;
+use process::display;
 
 fn main() {
     signal::ignore_signals();
-    while let Some(line) = read_line() {
+    while let Some(line) = display::read_line() {
         if !&line.is_empty() {
             match cmd_parse(&line) {
                 Some(result) => { exec_cmd(result) }
@@ -24,44 +19,6 @@ fn main() {
         }
     }
     println!();
-}
-
-fn display_prompt() {
-    let current_path = env::current_dir().unwrap();
-
-    match current_path.to_str() {
-        None => { eprintln!("Path cannot be converted to string type"); },
-        Some(strdir) => {
-            let dir: Vec<&str> = strdir.split('/').collect();
-            print!("[{}@{} {}]{}",
-                whoami::username().yellow(),
-                whoami::hostname(),
-                dir[dir.len()-1],
-                "$ ".red());
-            stdout().flush().unwrap();
-        },
-    }
-}
-
-
-fn read_line() -> Option<String> {
-    display_prompt();
-
-    let mut result = String::new();
-    match stdin().read_line(&mut result) {
-        Ok(size) => {
-            if size == 0 {
-                None
-            } else {
-                let result = result.trim_end();
-                Some(result.to_string())
-            }
-        }
-        Err(e) => {
-            eprintln!("{}", e);
-            None
-        }
-    }
 }
 
 fn exec_cmd(cmd: Vec<CString>) {
