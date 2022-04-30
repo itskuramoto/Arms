@@ -6,19 +6,40 @@ pub fn cmd_parse(_line: &str) -> Option<Vec<CString>> {
         .map(|s| s.to_string())
         .collect::<Vec<_>>();
     let mut cmd = Vec::new();
-
-    for argument in lines.iter() {
-        if argument == "exit" {
-            exit(0);
-        }
-        else if argument == "cd" {
-            match lines.iter().next() {
-                Some(args) => { builtin_cmd::run_cd(args.to_string()) }
-                None => {}
+    match get_iter_next(lines.clone()) {
+        Some(iter_next) => {
+            for argument in lines.iter() {
+                if check_builtin_cmd(argument, iter_next.clone(), cmd.clone()) {
+                    return None;
+                }
+                else
+                {
+                    cmd.push(CString::new(argument.to_string()).unwrap());
+                }
             }
-            return None;
+            return Some(cmd);
         }
-        cmd.push(CString::new(argument.to_string()).unwrap());
+        None => { return None; }
     }
-    return Some(cmd);
 }
+
+fn get_iter_next(lines: Vec<String>) -> Option<String> {
+    let iter_next;
+    match lines.iter().next() {
+        Some(args) => { iter_next = args }
+        None => { return None; }
+    }
+    Some(iter_next.to_string())
+}
+
+fn check_builtin_cmd(argument: &str, iter_next: String, cmd: Vec<CString>) -> bool {
+    let mut is_ok = true;
+    match argument {
+        "exit"  => { exit(0) } 
+        "cd"    => { builtin_cmd::run_cd(iter_next) }
+        ">>"    => { builtin_cmd::over_redirect(cmd, iter_next) }
+        ">"     => { builtin_cmd::redirect(cmd, iter_next) }
+        _       => { is_ok = false }
+    }
+    is_ok
+} 
