@@ -1,4 +1,5 @@
 use std::{ffi::CString, process::exit};
+use super::redirect;
 use super::builtin_cmd;
 
 pub fn cmd_parse(_line: &str) -> Vec<CString> {
@@ -12,8 +13,8 @@ pub fn cmd_parse(_line: &str) -> Vec<CString> {
             break;
         }
         match &*lines[cnt] { 
-            ">>"    => { cnt += 1; builtin_cmd::over_redirect(&lines[cnt]) }
-            ">"     => { cnt += 1; builtin_cmd::redirect(&lines[cnt]) }
+            ">>"    => { cnt += 1; redirect::append_file(&lines[cnt]) }
+            ">"     => { cnt += 1; redirect::write_file(&lines[cnt]) }
             _       => { cmd.push(CString::new(lines[cnt].to_string()).unwrap()) }
         }
         cnt += 1;
